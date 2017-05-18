@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+name=`basename "$2"`
+head -n 1 "$2" | grep '^# ' >/dev/null || {
+    grep '\]('"${name}"')' "$1" | sed 's/[- ]*\[\(Appendix: \)\{0,1\}\(.*\)\]([^)]*) *$/# \2/'
+    echo
+}
+cat "$2"

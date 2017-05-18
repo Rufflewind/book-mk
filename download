@@ -1,0 +1,38 @@
+#!/bin/sh
+
+#@snips[
+#@download[
+# Download a file from a given URL.
+#
+# inputs:
+#   - 1:    URL
+#   - 2:    output filename (defaults to "-", a.k.a. stdout)
+#
+# Providing `UNAME_S` is optional.  If provided, it must contain the cached
+# result of `uname -s`.
+download() {
+    if type curl >/dev/null 2>&1; then
+        download() {
+            curl -fLsS -o "${2--}" -- "$1"
+        }
+    elif type wget >/dev/null 2>&1; then
+        download() {
+            wget -nv -o "${2--}" -- "$1"
+        }
+    else
+        UNAME_S=${UNAME_S-`uname -s || :`}
+        if [ x"${UNAME_S}" = xOpenBSD ] && type ftp >/dev/null 2>&1; then
+            download() {
+                ftp -V -o "${2--}" -- "$1"
+            }
+        else
+            printf >&2 "%s%s\n" "error: unable to download files (can't " \
+                'find "curl", "wget" or OpenBSD "ftp")'
+            return 1
+        fi
+    fi
+    download "$@"
+}
+#@]
+
+download "$@"

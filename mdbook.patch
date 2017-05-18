@@ -1,0 +1,17 @@
+--- src/utils/mod.rs
++++ src/utils/mod.rs
+@@ -8,13 +8,5 @@
+ /// Wrapper around the pulldown-cmark parser and renderer to render markdown
+ 
+ pub fn render_markdown(text: &str) -> String {
+-    let mut s = String::with_capacity(text.len() * 3 / 2);
+-
+-    let mut opts = Options::empty();
+-    opts.insert(OPTION_ENABLE_TABLES);
+-    opts.insert(OPTION_ENABLE_FOOTNOTES);
+-
+-    let p = Parser::new_ext(text, opts);
+-    html::push_html(&mut s, p);
+-    s
++    text.to_owned()
+ }
