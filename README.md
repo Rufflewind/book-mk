@@ -5,3 +5,7 @@
 `book-mk` is a set of scripts for creating HTML and PDF books from Pandoc-flavored Markdown using [Pandoc](https://pandoc.org), [LaTeX](https://www.latex-project.org), and [mdBook](https://github.com/azerupi/mdBook).
 
 Note: This project is still a work in progress!
+
+## License
+
+Dual-licensed under Apache and MIT.
