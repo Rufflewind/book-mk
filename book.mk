@@ -103,12 +103,12 @@ target/stage/html/src/%: target/stage/src/%
 
 target/pdf/book.pdf: $(patsubst src/%,target/pdf/%,$(patsubst %.svg,%.pdf,$(assets)))
 
-target/pdf/book.tex: .local/bin/latex-merge target/stage/src/SUMMARY.md $(addprefix target/pdf/,$(wildcard *.bib)) Makefile $(json_items)
+target/pdf/book.tex: .local/bin/latex-merge target/stage/src/SUMMARY.md $(latex_pandoc_deps) Makefile $(addprefix target/pdf/,$(wildcard *.bib)) $(json_items)
 	@mkdir -p $(@D)
-	$(wordlist 1,2,$^) $(basename $@)
+	$(wordlist 1,2,$^) $(latex_merge_args) $(basename $@)
 	$(PANDOC) --top-level-division=chapter $(pandoc_args) -o $(basename $@)_before.tex $(basename $@)_before.json
 	$(PANDOC) --top-level-division=chapter $(pandoc_args) -o $(basename $@)_after.tex $(basename $@)_after.json
-	$(PANDOC) --top-level-division=chapter -M documentclass=book -H $(basename $@)_head.tex -B $(basename $@)_before.tex -A $(basename $@)_after.tex $(pandoc_args) $(latex_pandoc_args) -o $@ $(basename $@).json
+	$(PANDOC) --top-level-division=chapter -M documentclass=book -H $(basename $@)_head.tex -B $(basename $@)_before.tex -A $(basename $@)_after.tex $(pandoc_args) $(call latex_pandoc_args,$(latex_pandoc_deps)) -o $@ $(basename $@).json
 
 target/pdf/%.bib: %.bib
 	@mkdir -p $(@D)

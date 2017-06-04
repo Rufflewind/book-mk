@@ -4,7 +4,9 @@ extern crate mdbook;
 extern crate pandoc_ast;
 extern crate tools;
 
-use std::path::Path;
+use std::iter;
+use std::collections::HashSet;
+use std::path::{Path, PathBuf};
 use pandoc_ast::{Block, MutVisitor};
 
 struct Filter {
@@ -30,7 +32,7 @@ enum Part {
 }
 
 /// Read the JSON file for each book item and piece them together.
-fn merge_book_items(src_dir: &Path)
+fn merge_book_items(src_dir: &Path, front_in_body_files: &HashSet<PathBuf>)
                     -> (pandoc_ast::Pandoc,
                         pandoc_ast::Pandoc,
                         pandoc_ast::Pandoc)
@@ -65,6 +67,11 @@ fn merge_book_items(src_dir: &Path)
             }
             mdbook::BookItem::Affix(ref chapter) => {
                 let doc = match part {
+                    Part::FrontMatter
+                        if front_in_body_files.contains(&chapter.path) =>
+                    {
+                        &mut main_doc
+                    }
                     Part::FrontMatter => &mut before_doc,
                     Part::MainMatter | Part::Appendix => {
                         after_doc.blocks.push(Block::RawBlock(
@@ -95,22 +102,34 @@ fn merge_book_items(src_dir: &Path)
 fn main() {
     env_logger::init().unwrap();
     let matches = clap::App::new(env!("CARGO_PKG_NAME"))
+        .args_from_usage("--front-in-body=[file]... \
+                          'Put front matter affix at beginning of $body rather \
+                          than in $include-before.  Pass in the relative path \
+                          of the file, not the title.'")
         .args_from_usage("<summary-file>")
         .args_from_usage("<out-prefix>")
         .get_matches();
-    let summary_file = matches.value_of("summary-file").unwrap();
-    let out_prefix = matches.value_of("out-prefix").unwrap();
+    let front_in_body_files =
+        match matches.values_of_os("front-in-body") {
+            Some(m) => m.map(|p| Path::new(p).with_extension("json")).collect(),
+            None => iter::empty().collect(),
+        };
+    let summary_file = matches.value_of_os("summary-file").unwrap();
+    let out_prefix = matches.value_of_os("out-prefix").unwrap();
     let src_dir = Path::new(&summary_file).parent().unwrap();
 
-    let (before_doc, main_doc, after_doc) = merge_book_items(&src_dir);
+    let (before_doc, main_doc, after_doc) = merge_book_items(
+        &src_dir,
+        &front_in_body_files,
+    );
     // workaround because the default Pandoc template
     // doesn't have a place to insert \frontmatter before \maketitle
-    tools::save_file(&Path::new(&(out_prefix.to_owned() + "_head.tex")),
+    tools::save_file(&Path::new(&tools::add_os_str(out_prefix, "_head.tex")),
                      "\\AtBeginDocument{\\frontmatter}").unwrap();
-    tools::save_file(&Path::new(&(out_prefix.to_owned() + "_before.json")),
+    tools::save_file(&Path::new(&tools::add_os_str(out_prefix, "_before.json")),
                      &tools::pandoc::to_json(&before_doc)).unwrap();
-    tools::save_file(&Path::new(&(out_prefix.to_owned() + ".json")),
+    tools::save_file(&Path::new(&tools::add_os_str(out_prefix, ".json")),
                      &tools::pandoc::to_json(&main_doc)).unwrap();
-    tools::save_file(&Path::new(&(out_prefix.to_owned() + "_after.json")),
+    tools::save_file(&Path::new(&tools::add_os_str(out_prefix, "_after.json")),
                      &tools::pandoc::to_json(&after_doc)).unwrap();
 }

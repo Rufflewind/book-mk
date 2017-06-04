@@ -3,6 +3,7 @@ extern crate tempdir;
 extern crate toml;
 
 use std::error::Error;
+use std::ffi::{OsStr, OsString};
 use std::io::{Read, Write};
 use std::path::Path;
 
@@ -132,6 +133,15 @@ impl Error for StringError {
     fn description(&self) -> &str {
         &self.0
     }
+}
+
+pub fn add_os_str<S1, S2>(s1: S1, s2: S2) -> OsString
+    where S1: Into<OsString>,
+          S2: AsRef<OsStr>,
+{
+    let mut s1 = s1.into();
+    s1.push(s2);
+    s1
 }
 
 pub fn load_file(path: &Path) -> std::io::Result<String> {
