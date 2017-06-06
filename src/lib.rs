@@ -2,7 +2,6 @@ extern crate serde_json;
 extern crate tempdir;
 extern crate toml;
 
-use std::error::Error;
 use std::ffi::{OsStr, OsString};
 use std::io::{Read, Write};
 use std::path::Path;
@@ -107,31 +106,6 @@ pub mod pandoc {
 pub mod quote {
     pub fn yaml(s: &str) -> String {
         "'".to_owned() + &s.replace("'", "'''") + "'"
-    }
-}
-
-#[derive(Clone, Debug, Default)]
-pub struct StringError(String);
-
-impl StringError {
-    pub fn from_debug<T: std::fmt::Debug>(e: T) -> Self {
-        StringError(format!("{:?}", e))
-    }
-
-    pub fn boxed<S: Into<String>>(s: S) -> Box<Self> {
-        Box::new(StringError(s.into()))
-    }
-}
-
-impl std::fmt::Display for StringError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-impl Error for StringError {
-    fn description(&self) -> &str {
-        &self.0
     }
 }
 
