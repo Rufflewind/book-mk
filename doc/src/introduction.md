@@ -8,7 +8,8 @@ First of all, you need a Unix-like system, because the build system relies heavi
 
   - [GNU Make 4.2.\*](https://www.gnu.org/software/make)
   - [Pandoc 1.18.\*.\*](https://pandoc.org)
-  - [pandoc-citeproc 0.10.\*.\*](https://github.com/jgm/pandoc-citeproc) (if you don’t use citations, you can just symlink this to `cat`)
+  - [pandoc-citeproc 0.10.\*.\*](https://github.com/jgm/pandoc-citeproc) (if you don’t use citations, you can just replace this with `sh -c cat`)
+  - [pandoc-crossref 0.2.\*.\*](https://github.com/lierdakil/pandoc-crossref) (if you don’t use cross-references, you can just replace this with `sh -c cat`)
   - [Rust 1.17.\*](https://www.rust-lang.org)
   - For PDF output:
       - [LaTeX 2e](https://www.latex-project.org)

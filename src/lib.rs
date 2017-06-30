@@ -1,5 +1,6 @@
 extern crate serde_json;
 extern crate tempdir;
+extern crate tempfile;
 extern crate toml;
 
 use std::ffi::{OsStr, OsString};
@@ -125,7 +126,40 @@ pub fn load_file(path: &Path) -> std::io::Result<String> {
 }
 
 pub fn save_file(path: &Path, contents: &str) -> std::io::Result<()> {
-    let mut f = std::fs::File::create(path)?;
+    let mut f = tempfile::NamedTempFile::new_in(
+        path.parent().ok_or(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput, "Not a file"))?)?;
     f.write_all(contents.as_bytes())?;
+    f.persist(path).map_err(|e| e.error)?;
     Ok(())
+}
+
+pub fn walk_files_in_dir<F>(dir: &Path, f: &mut F) -> std::io::Result<()>
+    where F: FnMut(std::fs::DirEntry) -> std::io::Result<()>,
+{
+    if dir.is_dir() {
+        for entry in std::fs::read_dir(dir)? {
+            let entry = entry?;
+            let file_type = entry.file_type()?;
+            if file_type.is_dir() {
+                walk_files_in_dir(&entry.path(), f)?;
+            } else {
+                f(entry)?;
+            }
+        }
+    }
+    Ok(())
+}
+
+pub const AMALG_MAGIC: &str = "3Gqc387NOKUJCdLb6OYGOg";
+
+pub fn match_amalg_prefix(s: &str) -> Option<&str> {
+    let s = s.trim();
+    let prefix = format!("<!-- {} ", AMALG_MAGIC);
+    let suffix = " -->";
+    if s.starts_with(&prefix) && s.ends_with(suffix) {
+        Some(&s[prefix.len() .. s.len() - suffix.len()])
+    } else {
+        None
+    }
 }

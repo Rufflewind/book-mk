@@ -3,6 +3,9 @@ INKSCAPE?=inkscape
 LATEXMK?=latexmk
 PANDOC?=pandoc
 PANDOC_CITEPROC?=pandoc-citeproc
+PANDOC_CROSSREF?=pandoc-crossref
+
+base_pandoc_args=--top-level-division=chapter -M documentclass=book -M link-citations=true -M linkReferences=true
 
 tool_dir?=.
 
@@ -40,7 +43,6 @@ target/stage/src/SUMMARY.mk: src/SUMMARY.md .local/bin/get-book-items
 
 items=$(addprefix src/,$(item_names))
 json_items=$(patsubst %.md,target/stage/%.json,$(items))
-htm_items=$(patsubst %.md,target/stage/html/%.htm,$(items))
 assets=$(shell find src -not -name '*.md' -type f)
 
 # Deployment
@@ -65,7 +67,8 @@ target/stage/src/SUMMARY.md: src/SUMMARY.md
 
 target/stage/src/%.json: src/%.md $(tool_dir)/prepend-heading src/SUMMARY.md Makefile
 	@mkdir -p $(@D)
-	$(wordlist 2,3,$^) $< | $(PANDOC) $(metadata) $(pandoc_args) $(pp_pandoc_args) -s -f markdown -o $@
+	$(wordlist 2,3,$^) $< | $(PANDOC) --natbib $(base_pandoc_args) $(metadata) $(pandoc_args) $(pp_pandoc_args) -s -f markdown -o $@
+# --natbib prevents pandoc from auto-invoking pandoc-citeproc
 
 target/stage/src/%: src/%
 	@mkdir -p $(@D)
@@ -75,7 +78,7 @@ target/stage/src/%: src/%
 # -----------
 
 # clean target/html to prevent deleted files from being deployed
-target/html/index.html: target/stage/html/book.toml .local/bin/mdbook target/stage/html/src/SUMMARY.md $(htm_items) $(addprefix target/stage/html/,$(assets))
+target/html/index.html: target/stage/html/book.toml .local/bin/mdbook target/stage/html/book.ok $(addprefix target/stage/html/,$(assets))
 	@dir='$(@D)' && rm -fr "$${dir}"
 	echo $^
 	$(word 2,$^) build --no-create $(<D)
@@ -86,17 +89,14 @@ target/stage/html/book.toml: Makefile .local/bin/html-mdbook-toml
 	@mkdir -p $(@D)
 	$(word 2,$^) ../../html $(metadata) >$@
 
-target/stage/html/src/SUMMARY.md: target/stage/src/SUMMARY.md
-	@mkdir -p $(@D)
-	sed 's/\.json) *$$/\.htm)/' $< >$@
-
-target/stage/html/src/%.htm: target/stage/src/%.json .local/bin/append-biblio-title Makefile
-	@mkdir -p $(@D)
-	$(word 2,$^) --level=2 <$< | $(PANDOC_CITEPROC) | $(PANDOC) $(pandoc_args) $(html_pandoc_args) -f json -o $@
+target/stage/html/book.ok: target/stage/src/SUMMARY.md .local/bin/html-merge .local/bin/html-fix-links .local/bin/html-split Makefile target/stage/html/src/SUMMARY.md $(json_items)
+	@mkdir -p $(@D)/src
+	$(word 2,$^) --biblio-path=bibliography --final-ext=html --output-ext=htm --output-dir=$(@D)/src $(<D) | $(PANDOC_CROSSREF) html | $(PANDOC_CITEPROC) html | $(word 3,$^) | pandoc $(base_pandoc_args) $(pandoc_args) $(html_pandoc_args) -f json -t html | $(word 4,$^) --output-ext=htm --output-dir=$(@D)/src
+	@touch $@
 
 target/stage/html/src/%: target/stage/src/%
 	@mkdir -p $(@D)
-	ln -f $< $@
+	@ln -f $< $@
 
 # PDF Output
 # -----------
@@ -106,9 +106,9 @@ target/pdf/book.pdf: $(patsubst src/%,target/pdf/%,$(patsubst %.svg,%.pdf,$(asse
 target/pdf/book.tex: .local/bin/latex-merge target/stage/src/SUMMARY.md $(latex_pandoc_deps) Makefile $(addprefix target/pdf/,$(wildcard *.bib)) $(json_items)
 	@mkdir -p $(@D)
 	$(wordlist 1,2,$^) $(latex_merge_args) $(basename $@)
-	$(PANDOC) --top-level-division=chapter $(pandoc_args) -o $(basename $@)_before.tex $(basename $@)_before.json
-	$(PANDOC) --top-level-division=chapter $(pandoc_args) -o $(basename $@)_after.tex $(basename $@)_after.json
-	$(PANDOC) --top-level-division=chapter -M documentclass=book -H $(basename $@)_head.tex -B $(basename $@)_before.tex -A $(basename $@)_after.tex $(pandoc_args) $(call latex_pandoc_args,$(latex_pandoc_deps)) -o $@ $(basename $@).json
+	$(PANDOC_CROSSREF) latex <$(basename $@)_before.json | $(PANDOC) $(base_pandoc_args) $(pandoc_args) -f json -o $(basename $@)_before.tex
+	$(PANDOC_CROSSREF) latex <$(basename $@)_after.json | $(PANDOC) $(base_pandoc_args) $(pandoc_args) -f json -o $(basename $@)_after.tex
+	$(PANDOC_CROSSREF) latex <$(basename $@).json | $(PANDOC)  $(base_pandoc_args) -H $(basename $@)_head.tex -B $(basename $@)_before.tex -A $(basename $@)_after.tex $(pandoc_args) $(call latex_pandoc_args,$(latex_pandoc_deps)) -f json -o $@
 
 target/pdf/%.bib: %.bib
 	@mkdir -p $(@D)
@@ -124,8 +124,13 @@ target/pdf/%: target/stage/src/%
 # set PATH to avoid unnecessary warning
 cargo_install=PATH=.local/bin:$$PATH $(CARGO) install -f --root .local
 
-.local/bin/%: $(tool_dir)/Cargo.toml $(shell find $(tool_dir)/src -type d -o -type f)
+.local/bin/%: .local/tmp/tools.built
+	@touch $@
+
+.local/tmp/tools.built: $(tool_dir)/Cargo.toml $(shell find $(tool_dir)/src -type d -o -type f)
 	$(cargo_install) --path $(<D)
+	@mkdir -p $(@D)
+	@touch $@
 
 .local/bin/mdbook: .local/src/mdbook.tar.gz $(tool_dir)/mdbook.patch
 	gunzip <$< | ( cd $(<D) && tar xf -; )

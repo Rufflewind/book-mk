@@ -1,10 +1,12 @@
+# Internals {#sec:internals}
+
     src -------> target/stage ------> target/<format>
         frontend              backend
 
-  - Frontend: format-independent processing through Pandoc
-  - Backend: format-specific rendering through Pandoc and mdBook/LaTeX
+  - Frontend ([@Sec:frontend]): format-independent processing through Pandoc
+  - Backend ([@Sec:html-output; @Sec:pdf-output]): format-specific rendering through Pandoc and mdBook/LaTeX
 
-## Frontend
+## Frontend {#sec:frontend}
 
     src/*.md
 
@@ -36,28 +38,36 @@ Still, even though the transformations are totally independent, the makefile has
 
 Using the files in the staging directory (`target/stage`), we use mdBook to parse the structure of the book items (chapters, sections, etc) in `SUMMARY.md` and render the output files.  This is handled by the following custom Rust tools:
 
-  - `latex-merge`, which reads `SUMMARY.md` and combines the various `target/stage/src/*.json` files into a single JSON file `target/pdf/book.json` to be consumed by Pandoc for PDF generation.
-  - `append-biblio-title`, which, if `-M biblio-title=<title>` is set, appends the title of the bibliography to each chapter of the HTML book just before `pandoc-citeproc` is run.
-  - `html-mdbook-toml`: which translates the Makefile variable `$(metadata)` into `target/stage/html/book.toml` for mdBook.
+  - `html-mdbook-toml`, which translates the Makefile variable `$(metadata)` into `target/stage/html/book.toml` for mdBook.
+  - `html-merge`: combines the input files into an amalgamation so that `pandoc-crossref` works correctly (also appends the bibliography if present)
+  - `html-fix-links`: make the links in an amalgamation work correctly after splitting
+  - `html-split`: splits the amalgamation back into individual pages for `mdbook`
+  - `latex-merge`, reads `SUMMARY.md` and combines the various `target/stage/src/*.json` files into a single JSON file `target/pdf/book.json` to be consumed by Pandoc for PDF generation.
 
-### HTML Output
+### HTML Output {#sec:html-output}
 
     target/stage/src/*.json
 
             |
-            | append-biblio-title
+            | html-merge
             v
 
     [json]
 
             |
+            | pandoc-crossref
+            | +
             | pandoc-citeproc
+            | +
+            | html-fix-links
+            | +
+            | pandoc (HTML)
             v
 
-    [json]
+    [html]
 
             |
-            | pandoc (HTML)
+            | html-split
             v
 
     target/stage/html/src/*.htm
@@ -88,7 +98,7 @@ After rendering, mdBook copies all files except `.md` files into the output dire
 
 Part of the reason to have `target/stage` is so that we can select precisely what files we want.  mdBook is not very selective so it will copy everything in `src` into `dest` and then purge all the `.md` files.
 
-### PDF Output
+### PDF Output {#sec:pdf-output}
 
     target/stage/src/*.json
 
@@ -99,6 +109,8 @@ Part of the reason to have `target/stage` is so that we can select precisely wha
     target/pdf/book{_head.tex,{_before,,_after}.json}
 
             |
+            | pandoc-multiref
+            | +
             | pandoc (LaTeX)
             v
 
@@ -117,3 +129,5 @@ The main reason for invoking `Pandoc` within `latexbook` is because there are au
 #### Location of the `.bib` file
 
 It’s much easier to have the `.bib` file at the top-level.  The reason is that we want it to work with both `pandoc-citeproc`, which treats it as a path relative to the top-level directory, and `natbib`, which treats it as a path relative to `target/pdf`.  If we put it inside `src`, then `pandoc-citeproc` would complain, and mdbook would unwittingly copy the `.bib` file into `target/html`.
+
+Example of a bibliographic citation: [@testitem]
