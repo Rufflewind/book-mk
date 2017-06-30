@@ -1,0 +1,149 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Usage - book-mk Documentation</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <base href="">
+
+        <link rel="stylesheet" href="book.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+
+        <!-- MathJax -->
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Fetch JQuery from CDN but have a local fallback -->
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script>
+            if (typeof jQuery == 'undefined') {
+                document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
+            }
+        </script>
+    </head>
+    <body class="light">
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme = localStorage.getItem('theme');
+            if (theme == null) { theme = 'light'; }
+            $('body').removeClass().addClass(theme);
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var sidebar = localStorage.getItem('sidebar');
+            if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
+            else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
+        </script>
+
+        <div id="sidebar" class="sidebar">
+            <ul class="chapter"><li><a href="introduction.html"><strong>1.</strong> Introduction</a></li><li><a href="usage.html" class="active"><strong>2.</strong> Usage</a></li><li><a href="customization.html"><strong>3.</strong> Customization</a></li><li><a href="internals.html"><strong>4.</strong> Internals</a></li><li class="affix"><a href="bibliography.html">Bibliography</a></li></ul>
+        </div>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar" class="menu-bar">
+                    <div class="left-buttons">
+                        <i id="sidebar-toggle" class="fa fa-bars"></i>
+                        <i id="theme-toggle" class="fa fa-paint-brush"></i>
+                    </div>
+
+                    <h1 class="menu-title">book-mk Documentation</h1>
+
+                    <div class="right-buttons">
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                    </div>
+                </div>
+
+                <div id="content" class="content">
+                    <h1 id="usage"><span class="header-section-number">2</span> Usage</h1>
+<h2 id="minimal-example"><span class="header-section-number">2.1</span> Minimal example</h2>
+<p>Start by creating an empty directory. This will serve as the source tree of your book.</p>
+<p>Download the <code>book-mk</code> source code and extract its contents into a subdirectory <code>./book-mk</code> so that “<code>./book-mk/book.mk</code>” points to the makefile. Other than things like <code>./book-mk/README.md</code> or <code>./book-mk/doc.md</code>, most of the files under <code>./book-mk</code> are essential and should not be removed.</p>
+<p>Create <code>./Makefile</code> with the following contents:</p>
+<pre class="make"><code>metadata=-M title=&quot;My first book&quot; \
+         -M author=&quot;Your Name&quot;
+
+tool_dir=book-mk
+include $(tool_dir)/book.mk</code></pre>
+<p>This is your top-level makefile and is the entry point of the build system. (The <code>metadata</code> and <code>tool_dir</code> variables are special, so don’t rename them!)</p>
+<p>Next, create <code>./src/SUMMARY.md</code> with your table of contents:</p>
+<pre><code>[Preface](preface.md)
+- [Chapter 1](chapter-1.md)
+- [Chapter 2](chapter-2.md)
+  - [Section 2.1](section-2-1.md)
+[Epilogue](epilogue.md)</code></pre>
+<p>Finally, create a file <code>./src/preface.md</code> with the following contents:</p>
+<pre><code>Hello world!</code></pre>
+<p>Don’t worry about the other chapters – the build system will automatically create them if they’re missing.</p>
+<h2 id="building-the-book"><span class="header-section-number">2.2</span> Building the book</h2>
+<p>Simply run:</p>
+<pre><code>make target/html target/pdf</code></pre>
+<ul>
+<li>The HTML version is at <code>target/html/index.html</code>.</li>
+<li>The PDF version is at <code>target/pdf/book.pdf</code>. There’ll be some auxiliary files created in <code>target/pdf</code> as well, but none of them are essential. They can be useful for debugging problems though.</li>
+</ul>
+<p>The makefile also provides the following commands (phony targets):</p>
+<ul>
+<li><code>clean</code>: Remove the <code>target</code> directory. This does <em>not</em> remove the <code>.local</code> directory, however, because building those can often take some time.</li>
+<li><code>deploy-gh-pages</code>: Upload the HTML and PDF books to GitHub pages using the <code>origin</code> remote of the current Git repository.</li>
+</ul>
+
+                </div>
+
+                <!-- Mobile navigation buttons -->
+                
+                    <a href="introduction.html" class="mobile-nav-chapters previous">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="customization.html" class="mobile-nav-chapters next">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+
+            </div>
+
+            
+                <a href="introduction.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+            
+
+            
+                <a href="customization.html" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            
+
+        </div>
+
+
+        <!-- Local fallback for Font Awesome -->
+        <script>
+            if ($(".fa").css("font-family") !== "FontAwesome") {
+                $('<link rel="stylesheet" type="text/css" href="_FontAwesome/css/font-awesome.css">').prependTo('head');
+            }
+        </script>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        
+
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+    </body>
+</html>

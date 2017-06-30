@@ -1,0 +1,297 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Bibliography - book-mk Documentation</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <base href="">
+
+        <link rel="stylesheet" href="book.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+
+        <!-- MathJax -->
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Fetch JQuery from CDN but have a local fallback -->
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script>
+            if (typeof jQuery == 'undefined') {
+                document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
+            }
+        </script>
+    </head>
+    <body class="light">
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme = localStorage.getItem('theme');
+            if (theme == null) { theme = 'light'; }
+            $('body').removeClass().addClass(theme);
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var sidebar = localStorage.getItem('sidebar');
+            if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
+            else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
+        </script>
+
+        <div id="sidebar" class="sidebar">
+            <ul class="chapter"><li><a href="introduction.html"><strong>1.</strong> Introduction</a></li><li><a href="usage.html"><strong>2.</strong> Usage</a></li><li><a href="customization.html"><strong>3.</strong> Customization</a></li><li><a href="internals.html"><strong>4.</strong> Internals</a></li><li class="affix"><a href="bibliography.html">Bibliography</a></li></ul>
+        </div>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar" class="menu-bar">
+                    <div class="left-buttons">
+                        <i id="sidebar-toggle" class="fa fa-bars"></i>
+                        <i id="theme-toggle" class="fa fa-paint-brush"></i>
+                    </div>
+
+                    <h1 class="menu-title">book-mk Documentation</h1>
+
+                    <div class="right-buttons">
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                    </div>
+                </div>
+
+                <div id="content" class="content">
+                    <h1 id="introduction"><span class="header-section-number">1</span> Introduction</h1>
+<p><code>book-mk</code> is a set of scripts for building books from Markdown source files. Currently, HTML and PDF are supported.</p>
+<p><code>book-mk</code> is not meant to be installed as a package. Instead, it is intended to be embedded inside a subdirectory of your book’s source tree. You can use <a href="https://git-scm.com/book/en/v2/Git-Tools-Submodules">Git submodules</a> for this but it is not required and won’t be explained here.</p>
+<h2 id="requirements"><span class="header-section-number">1.1</span> Requirements</h2>
+<p>First of all, you need a Unix-like system, because the build system relies heavily on makefiles. Additionally, the following tools are needed:</p>
+<ul>
+<li><a href="https://www.gnu.org/software/make">GNU Make 4.2.*</a></li>
+<li><a href="https://pandoc.org">Pandoc 1.18.*.*</a></li>
+<li><a href="https://github.com/jgm/pandoc-citeproc">pandoc-citeproc 0.10.*.*</a> (if you don’t use citations, you can just replace this with <code>sh -c cat</code>)</li>
+<li><a href="https://github.com/lierdakil/pandoc-crossref">pandoc-crossref 0.2.*.*</a> (if you don’t use cross-references, you can just replace this with <code>sh -c cat</code>)</li>
+<li><a href="https://www.rust-lang.org">Rust 1.17.*</a></li>
+<li>For PDF output:
+<ul>
+<li><a href="https://www.latex-project.org">LaTeX 2e</a> (including <a href="https://www.ctan.org/pkg/latexmk">latexmk 4.52c</a>)</li>
+<li>If you have any SVG images:
+<ul>
+<li><a href="https://inkscape.org/en/">Inkscape 0.92.*</a></li>
+</ul></li>
+</ul></li>
+</ul>
+<p>The version numbers are advisory: things will probably still work on something a bit older or newer.</p>
+<p>The book generator also relies on a <em>patched</em> version of <a href="https://github.com/azerupi/mdBook">mdBook</a> (see <code>mdbook.patch</code> in the source tree), but this will be automatically downloaded and installed to <code>./.local/bin/mdbook</code> by the build system. The user shouldn’t have to worry about this detail except on airgapped systems.</p>
+<h1 id="usage"><span class="header-section-number">2</span> Usage</h1>
+<h2 id="minimal-example"><span class="header-section-number">2.1</span> Minimal example</h2>
+<p>Start by creating an empty directory. This will serve as the source tree of your book.</p>
+<p>Download the <code>book-mk</code> source code and extract its contents into a subdirectory <code>./book-mk</code> so that “<code>./book-mk/book.mk</code>” points to the makefile. Other than things like <code>./book-mk/README.md</code> or <code>./book-mk/doc.md</code>, most of the files under <code>./book-mk</code> are essential and should not be removed.</p>
+<p>Create <code>./Makefile</code> with the following contents:</p>
+<pre class="make"><code>metadata=-M title=&quot;My first book&quot; \
+         -M author=&quot;Your Name&quot;
+
+tool_dir=book-mk
+include $(tool_dir)/book.mk</code></pre>
+<p>This is your top-level makefile and is the entry point of the build system. (The <code>metadata</code> and <code>tool_dir</code> variables are special, so don’t rename them!)</p>
+<p>Next, create <code>./src/SUMMARY.md</code> with your table of contents:</p>
+<pre><code>[Preface](preface.md)
+- [Chapter 1](chapter-1.md)
+- [Chapter 2](chapter-2.md)
+  - [Section 2.1](section-2-1.md)
+[Epilogue](epilogue.md)</code></pre>
+<p>Finally, create a file <code>./src/preface.md</code> with the following contents:</p>
+<pre><code>Hello world!</code></pre>
+<p>Don’t worry about the other chapters – the build system will automatically create them if they’re missing.</p>
+<h2 id="building-the-book"><span class="header-section-number">2.2</span> Building the book</h2>
+<p>Simply run:</p>
+<pre><code>make target/html target/pdf</code></pre>
+<ul>
+<li>The HTML version is at <code>target/html/index.html</code>.</li>
+<li>The PDF version is at <code>target/pdf/book.pdf</code>. There’ll be some auxiliary files created in <code>target/pdf</code> as well, but none of them are essential. They can be useful for debugging problems though.</li>
+</ul>
+<p>The makefile also provides the following commands (phony targets):</p>
+<ul>
+<li><code>clean</code>: Remove the <code>target</code> directory. This does <em>not</em> remove the <code>.local</code> directory, however, because building those can often take some time.</li>
+<li><code>deploy-gh-pages</code>: Upload the HTML and PDF books to GitHub pages using the <code>origin</code> remote of the current Git repository.</li>
+</ul>
+<h1 id="customization"><span class="header-section-number">3</span> Customization</h1>
+<h2 id="makefile"><span class="header-section-number">3.1</span> Makefile</h2>
+<p>The main point of customization is your <code>Makefile</code>. The following Make variables are supported:</p>
+<ul>
+<li><code>tool_dir</code> (required): The directory that contains the tools.</li>
+<li><code>metadata</code>: This can contain either:
+<ul>
+<li><code>-M title=&quot;&lt;title&gt;&quot;</code></li>
+<li><code>-M author=&quot;&lt;author&gt;&quot;</code> (you can repeat this flag multiple times for multiple authors)</li>
+</ul></li>
+<li><code>pandoc_args</code>: Arguments given to all Pandoc invocations.</li>
+<li><code>latex_documentclass</code>: LaTeX document class (defaults to <code>book</code>).</li>
+<li><code>latex_pandoc_args</code>: Arguments given to the Pandoc invocation that generates LaTeX.</li>
+<li><code>html_pandoc_args</code>: Arguments given to all Pandoc invocations that generate HTML.</li>
+</ul>
+<p>Pandoc offers <a href="https://pandoc.org/MANUAL.html">a lot of ways</a> to customize your output, many of which can have dramatic effects on the end result. If for some reason one of the flags interacts poorly with the <code>book-mk</code> system, please report a bug so we can either document it as a limitation or (better yet) find a workaround!</p>
+<p>For more advanced customizations, you’d want to read Sec. <a href="internals.html#sec:internals">4</a>.</p>
+<h2 id="environment-variables"><span class="header-section-number">3.2</span> Environment variables</h2>
+<p>When building, the following variables are used to determine where the respective executables are found. This can be useful if you have, e.g. <code>pandoc</code> installed at an unconventional location that is not on <code>PATH</code>.</p>
+<ul>
+<li><code>CARGO</code></li>
+<li><code>INKSCAPE</code></li>
+<li><code>LATEXMK</code></li>
+<li><code>PANDOC</code></li>
+<li><code>PANDOC_CITEPROC</code></li>
+<li><code>PANDOC_CROSSREF</code></li>
+</ul>
+<p>By default, they simply default to their unqualified executable names (i.e. <code>PANDOC</code> defaults to just <code>pandoc</code>, etc).</p>
+<h1 id="sec:internals"><span class="header-section-number">4</span> Internals</h1>
+<pre><code>src -------&gt; target/stage ------&gt; target/&lt;format&gt;
+    frontend              backend</code></pre>
+<ul>
+<li>Frontend (Sec. <a href="print.html#sec:frontend">4.1</a>): format-independent processing through Pandoc</li>
+<li>Backend (Secs. <a href="print.html#sec:html-output">4.2.1</a>, <a href="print.html#sec:pdf-output">4.2.2</a>): format-specific rendering through Pandoc and mdBook/LaTeX</li>
+</ul>
+<h2 id="sec:frontend"><span class="header-section-number">4.1</span> Frontend</h2>
+<pre><code>src/*.md
+
+    |
+    | prepend-heading
+    v
+
+[md]
+
+    |
+    | pandoc (frontend)
+    v
+
+[json]
+
+    |
+    | preprocessor
+    v
+
+target/stage/src/*.json</code></pre>
+<p>Each Markdown file is transformed individually into an output-independent JSON file using Pandoc. The use of JSON ensures that all the details are preserved correctly, including citations (which would get lost if HTML was used for intermediate files). The preprocessor is not yet implemented.</p>
+<p>The transformation of each file is independent of each other; there is no state maintained.</p>
+<p>Still, even though the transformations are totally independent, the makefile has to know which files need to be transformed. This is what <code>target/stage/src/SUMMARY.mk</code> stores: a list of the book items in the correct ordering as a makefile variable <code>$(item_names)</code>. It is obtained via <code>.local/bin/get-book-items</code>.</p>
+<h2 id="backend"><span class="header-section-number">4.2</span> Backend</h2>
+<p>Using the files in the staging directory (<code>target/stage</code>), we use mdBook to parse the structure of the book items (chapters, sections, etc) in <code>SUMMARY.md</code> and render the output files. This is handled by the following custom Rust tools:</p>
+<ul>
+<li><code>html-mdbook-toml</code>, which translates the Makefile variable <code>$(metadata)</code> into <code>target/stage/html/book.toml</code> for mdBook.</li>
+<li><code>html-merge</code>: combines the input files into an amalgamation so that <code>pandoc-crossref</code> works correctly (also appends the bibliography if present)</li>
+<li><code>html-fix-links</code>: make the links in an amalgamation work correctly after splitting</li>
+<li><code>html-split</code>: splits the amalgamation back into individual pages for <code>mdbook</code></li>
+<li><code>latex-merge</code>, reads <code>SUMMARY.md</code> and combines the various <code>target/stage/src/*.json</code> files into a single JSON file <code>target/pdf/book.json</code> to be consumed by Pandoc for PDF generation.</li>
+</ul>
+<h3 id="sec:html-output"><span class="header-section-number">4.2.1</span> HTML Output</h3>
+<pre><code>target/stage/src/*.json
+
+        |
+        | html-merge
+        v
+
+[json]
+
+        |
+        | pandoc-crossref
+        | +
+        | pandoc-citeproc
+        | +
+        | html-fix-links
+        | +
+        | pandoc (HTML)
+        v
+
+[html]
+
+        |
+        | html-split
+        v
+
+target/stage/html/src/*.htm
+
+        |
+        | mdbook
+        v
+
+target/html</code></pre>
+<p>The JSON files are translated into <code>.htm</code> using Pandoc. The choice of <code>.htm</code> instead of <code>.html</code> is mainly to work around an mdBook quirk.</p>
+<p>In principle, this one should be straightforward: just call <code>mdbook build &lt;dir&gt;</code>. In practice, we have to use a patched version of mdBook because we want to render Markdown using Pandoc rather than the default pulldown-cmark.</p>
+<h4 id="the-mdbook-patch"><span class="header-section-number">4.2.1.1</span> The mdBook patch</h4>
+<p>We use a patched version of mdBook that renders directly through HTML rather than through Markdown. This is because we use want to use Pandoc to preprocess the input files and “standard” Markdown is not very expressive.</p>
+<p>Originally, the plan was to preprocess with Pandoc and save them as CommonMark so that mdBook could parse them. However, the problem is that (a) Pandoc does not support a lossless conversion to CommonMark (b) pulldown-cmark does not adhere to CommonMark very well (e.g. it does not preserve whitespace within <code>&lt;pre&gt;</code> elements as the spec demands).</p>
+<p>Therefore, we simply disable the Markdown processing altogether and use HTML. To avoid duplicating a large chunk of code from mdBook, so we opted to just patch the original code instead.</p>
+<h4 id="using-.htm-instead-of-.html"><span class="header-section-number">4.2.1.2</span> Using <code>.htm</code> instead of <code>.html</code></h4>
+<p>After rendering, mdBook copies all files except <code>.md</code> files into the output directory. If we named the input files <code>.html</code> they would immediately overwrite the files we just generated! Moreover, using <code>.htm</code> makes it easy to delete the input files from the output directory afterward.</p>
+<h4 id="keeping-targethtml-tidy"><span class="header-section-number">4.2.1.3</span> Keeping <code>target/html</code> tidy</h4>
+<p>Part of the reason to have <code>target/stage</code> is so that we can select precisely what files we want. mdBook is not very selective so it will copy everything in <code>src</code> into <code>dest</code> and then purge all the <code>.md</code> files.</p>
+<h3 id="sec:pdf-output"><span class="header-section-number">4.2.2</span> PDF Output</h3>
+<pre><code>target/stage/src/*.json
+
+        |
+        | latex-merge
+        v
+
+target/pdf/book{_head.tex,{_before,,_after}.json}
+
+        |
+        | pandoc-multiref
+        | +
+        | pandoc (LaTeX)
+        v
+
+target/pdf/book.tex
+
+        |
+        | latexmk
+        v
+
+target/pdf/book.pdf</code></pre>
+<p><code>latex-merge</code> is responsible for combining the chapters together into a single JSON file, shifting the heading levels as necessary. Then <code>Pandoc</code> is invoked to generate the <code>.tex</code> file. Finally we run <code>latexmk</code> to produce the PDF.</p>
+<p>The main reason for invoking <code>Pandoc</code> within <code>latexbook</code> is because there are auxiliary files (e.g. frontmatter file) that would otherwise get entangled with the Makefile.</p>
+<h4 id="location-of-the-.bib-file"><span class="header-section-number">4.2.2.1</span> Location of the <code>.bib</code> file</h4>
+<p>It’s much easier to have the <code>.bib</code> file at the top-level. The reason is that we want it to work with both <code>pandoc-citeproc</code>, which treats it as a path relative to the top-level directory, and <code>natbib</code>, which treats it as a path relative to <code>target/pdf</code>. If we put it inside <code>src</code>, then <code>pandoc-citeproc</code> would complain, and mdbook would unwittingly copy the <code>.bib</code> file into <code>target/html</code>.</p>
+<p>Example of a bibliographic citation: <span class="citation" data-cites="testitem">(Doe <a href="bibliography.html#ref-testitem">2000</a>)</span></p>
+<h1 class="unnumbered">Bibliography</h1>
+<div id="refs" class="references">
+<div id="ref-testitem">
+<p>Doe, Jane. 2000. <em>This Is a Test</em>. University Press.</p>
+</div>
+</div>
+
+                </div>
+
+                <!-- Mobile navigation buttons -->
+                
+
+                
+
+            </div>
+
+            
+
+            
+
+        </div>
+
+
+        <!-- Local fallback for Font Awesome -->
+        <script>
+            if ($(".fa").css("font-family") !== "FontAwesome") {
+                $('<link rel="stylesheet" type="text/css" href="_FontAwesome/css/font-awesome.css">').prependTo('head');
+            }
+        </script>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        
+
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+    </body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Customization - book-mk Documentation</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <base href="">
+
+        <link rel="stylesheet" href="book.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+
+        <!-- MathJax -->
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Fetch JQuery from CDN but have a local fallback -->
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script>
+            if (typeof jQuery == 'undefined') {
+                document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
+            }
+        </script>
+    </head>
+    <body class="light">
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme = localStorage.getItem('theme');
+            if (theme == null) { theme = 'light'; }
+            $('body').removeClass().addClass(theme);
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var sidebar = localStorage.getItem('sidebar');
+            if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
+            else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
+        </script>
+
+        <div id="sidebar" class="sidebar">
+            <ul class="chapter"><li><a href="introduction.html"><strong>1.</strong> Introduction</a></li><li><a href="usage.html"><strong>2.</strong> Usage</a></li><li><a href="customization.html" class="active"><strong>3.</strong> Customization</a></li><li><a href="internals.html"><strong>4.</strong> Internals</a></li><li class="affix"><a href="bibliography.html">Bibliography</a></li></ul>
+        </div>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar" class="menu-bar">
+                    <div class="left-buttons">
+                        <i id="sidebar-toggle" class="fa fa-bars"></i>
+                        <i id="theme-toggle" class="fa fa-paint-brush"></i>
+                    </div>
+
+                    <h1 class="menu-title">book-mk Documentation</h1>
+
+                    <div class="right-buttons">
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                    </div>
+                </div>
+
+                <div id="content" class="content">
+                    <h1 id="customization"><span class="header-section-number">3</span> Customization</h1>
+<h2 id="makefile"><span class="header-section-number">3.1</span> Makefile</h2>
+<p>The main point of customization is your <code>Makefile</code>. The following Make variables are supported:</p>
+<ul>
+<li><code>tool_dir</code> (required): The directory that contains the tools.</li>
+<li><code>metadata</code>: This can contain either:
+<ul>
+<li><code>-M title=&quot;&lt;title&gt;&quot;</code></li>
+<li><code>-M author=&quot;&lt;author&gt;&quot;</code> (you can repeat this flag multiple times for multiple authors)</li>
+</ul></li>
+<li><code>pandoc_args</code>: Arguments given to all Pandoc invocations.</li>
+<li><code>latex_documentclass</code>: LaTeX document class (defaults to <code>book</code>).</li>
+<li><code>latex_pandoc_args</code>: Arguments given to the Pandoc invocation that generates LaTeX.</li>
+<li><code>html_pandoc_args</code>: Arguments given to all Pandoc invocations that generate HTML.</li>
+</ul>
+<p>Pandoc offers <a href="https://pandoc.org/MANUAL.html">a lot of ways</a> to customize your output, many of which can have dramatic effects on the end result. If for some reason one of the flags interacts poorly with the <code>book-mk</code> system, please report a bug so we can either document it as a limitation or (better yet) find a workaround!</p>
+<p>For more advanced customizations, you’d want to read Sec. <a href="internals.html#sec:internals">4</a>.</p>
+<h2 id="environment-variables"><span class="header-section-number">3.2</span> Environment variables</h2>
+<p>When building, the following variables are used to determine where the respective executables are found. This can be useful if you have, e.g. <code>pandoc</code> installed at an unconventional location that is not on <code>PATH</code>.</p>
+<ul>
+<li><code>CARGO</code></li>
+<li><code>INKSCAPE</code></li>
+<li><code>LATEXMK</code></li>
+<li><code>PANDOC</code></li>
+<li><code>PANDOC_CITEPROC</code></li>
+<li><code>PANDOC_CROSSREF</code></li>
+</ul>
+<p>By default, they simply default to their unqualified executable names (i.e. <code>PANDOC</code> defaults to just <code>pandoc</code>, etc).</p>
+
+                </div>
+
+                <!-- Mobile navigation buttons -->
+                
+                    <a href="usage.html" class="mobile-nav-chapters previous">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="internals.html" class="mobile-nav-chapters next">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+
+            </div>
+
+            
+                <a href="usage.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+            
+
+            
+                <a href="internals.html" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            
+
+        </div>
+
+
+        <!-- Local fallback for Font Awesome -->
+        <script>
+            if ($(".fa").css("font-family") !== "FontAwesome") {
+                $('<link rel="stylesheet" type="text/css" href="_FontAwesome/css/font-awesome.css">').prependTo('head');
+            }
+        </script>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        
+
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+    </body>
+</html>
