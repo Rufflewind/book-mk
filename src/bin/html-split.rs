@@ -22,7 +22,7 @@ fn main() {
                 current = Some(std::fs::File::create(path).unwrap());
             }
             None => {
-                let mut f = current.as_mut()
+                let f = current.as_mut()
                     .expect("invalid amalgamation file");
                 f.write_all(line.as_bytes()).unwrap();
                 f.write_all(b"\n").unwrap();
