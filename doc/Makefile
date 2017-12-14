@@ -1,7 +1,7 @@
 metadata=-M title="book-mk Documentation" \
          -M author="Phil Ruffwind"
 
-pandoc_args=-S --number-sections --natbib \
+pandoc_args=--number-sections --natbib \
             -M bibliography=book.bib \
             -M colorlinks \
             -M fontsize=12pt \
