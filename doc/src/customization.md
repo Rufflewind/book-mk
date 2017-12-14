@@ -7,6 +7,7 @@ The main point of customization is your `Makefile`.  The following Make variable
       - `-M title="<title>"`
       - `-M author="<author>"` (you can repeat this flag multiple times for multiple authors)
   - `pandoc_args`: Arguments given to all Pandoc invocations.
+  - `latex_documentclass`: LaTeX document class (defaults to `book`).
   - `latex_pandoc_args`: Arguments given to the Pandoc invocation that generates LaTeX.
   - `html_pandoc_args`: Arguments given to all Pandoc invocations that generate HTML.
 

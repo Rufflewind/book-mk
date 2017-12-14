@@ -5,7 +5,8 @@ PANDOC?=pandoc
 PANDOC_CITEPROC?=pandoc-citeproc
 PANDOC_CROSSREF?=pandoc-crossref
 
-base_pandoc_args=--top-level-division=chapter -M documentclass=book -M link-citations=true -M linkReferences=true
+latex_documentclass?=book
+base_pandoc_args=--top-level-division=chapter -M documentclass=$(latex_documentclass) -M link-citations=true -M linkReferences=true
 
 tool_dir?=.
 
