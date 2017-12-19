@@ -44,7 +44,7 @@ target/stage/src/SUMMARY.mk: src/SUMMARY.md .local/bin/get-book-items
 
 items=$(addprefix src/,$(item_names))
 json_items=$(patsubst %.md,target/stage/%.json,$(items))
-assets=$(shell find src -not -name '*.md' -type f)
+assets+=$(shell find src -not -name '*.md' -type f)
 
 # Deployment
 # ----------
