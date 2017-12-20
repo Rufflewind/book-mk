@@ -81,7 +81,6 @@ target/stage/src/%: src/%
 # clean target/html to prevent deleted files from being deployed
 target/html/index.html: target/stage/html/book.toml .local/bin/mdbook target/stage/html/book.ok $(addprefix target/stage/html/,$(assets))
 	@dir='$(@D)' && rm -fr "$${dir}"
-	echo $^
 	$(word 2,$^) build --no-create $(<D)
 	@( cd $(@D) && rm -f *.htm; )
 	@touch $@
