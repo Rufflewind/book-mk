@@ -53,7 +53,8 @@ fn merge_book_items(src_dir: &Path, front_in_body_files: &HashSet<PathBuf>)
                         part = Part::MainMatter;
                     }
                     Part::MainMatter
-                        if chapter.name.starts_with("Appendix:") =>
+                        if chapter.name.starts_with("Appendix:")
+                        || chapter.name == "Appendix" =>
                     {
                         main_doc.blocks.push(Block::RawBlock(
                             pandoc_ast::Format("tex".into()),

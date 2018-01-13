@@ -2,7 +2,10 @@
 set -eu
 name=`basename "$2"`
 head -n 1 "$2" | grep '^# ' >/dev/null || {
-    grep '\]('"${name}"')' "$1" | sed 's/[- ]*\[\(Appendix: \)\{0,1\}\(.*\)\]([^)]*) *$/# \2/'
-    echo
+    heading=`grep '\]('"${name}"')' "$1" | sed 's/[- ]*\[\(Appendix: \)\{0,1\}\(.*\)\]([^)]*) *$/# \2/'`
+    if [ "$heading" != "# Appendix" ]; then
+        printf "%s\n" "$heading"
+        echo
+    fi
 }
 cat "$2"
